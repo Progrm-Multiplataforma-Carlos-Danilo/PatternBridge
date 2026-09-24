@@ -1,5 +1,7 @@
 # PatternBridge — Módulo de Relatórios (Padrão Bridge)
 
+**Alunos:** Carlos Eduardo Fernandes Farias & Danilo Santos Soares
+
 Projeto acadêmico da disciplina de Padrões de Projeto (TechFatec). Implementa o
 **padrão de projeto Bridge (GoF, estrutural)** para desacoplar **tipos de
 relatório** (Vendas, RH, ...) de **formatos de exportação** (PDF, Excel,
@@ -67,6 +69,11 @@ PatternBridge/
 │   └── cliente/                 → Script de validação
 │       └── Main.java
 │
+├── docs/
+│   └── diagramas/               → Diagramas de classe e sequência (imagens)
+│       ├── diagrama-classes.png
+│       └── diagrama-sequencia.png
+│
 ├── .gitignore
 └── README.md
 ```
@@ -76,70 +83,7 @@ alteração em um dos pacotes não exige tocar no outro.
 
 ## 4. Diagrama de classes
 
-```mermaid
-classDiagram
-    direction LR
-
-    class Relatorio {
-        <<abstract>>
-        #ExportadorRelatorio exportador
-        -String nome
-        +Relatorio(nome, exportador)
-        +setExportador(novoExportador) void
-        +getNome() String
-        +gerar() void
-        #gerarConteudo()* String
-    }
-
-    class RelatorioVendas {
-        +RelatorioVendas(exportador)
-        #gerarConteudo() String
-    }
-
-    class RelatorioRH {
-        +RelatorioRH(exportador)
-        #gerarConteudo() String
-    }
-
-    class ExportadorRelatorio {
-        <<interface>>
-        +exportar(nomeRelatorio, conteudo) void
-        +getFormato() String
-    }
-
-    class ExportadorPDF {
-        +exportar(nomeRelatorio, conteudo) void
-        +getFormato() String
-    }
-
-    class ExportadorExcel {
-        +exportar(nomeRelatorio, conteudo) void
-        +getFormato() String
-    }
-
-    class ExportadorHTML {
-        +exportar(nomeRelatorio, conteudo) void
-        +getFormato() String
-    }
-
-    class Main {
-        +main(args) void
-    }
-
-    Relatorio <|-- RelatorioVendas
-    Relatorio <|-- RelatorioRH
-    ExportadorRelatorio <|.. ExportadorPDF
-    ExportadorRelatorio <|.. ExportadorExcel
-    ExportadorRelatorio <|.. ExportadorHTML
-
-    Relatorio o-- "1" ExportadorRelatorio : ponte (bridge)\ninjetada via construtor
-
-    Main ..> RelatorioVendas : cria e injeta
-    Main ..> RelatorioRH : cria e injeta
-    Main ..> ExportadorPDF : cria
-    Main ..> ExportadorExcel : cria
-    Main ..> ExportadorHTML : cria
-```
+![Diagrama de classes do padrão Bridge](docs/diagramas/diagrama-classes.png)
 
 **Leitura do diagrama:**
 - `Relatorio` (Abstraction) e `ExportadorRelatorio` (Implementor) são os dois
@@ -154,39 +98,7 @@ classDiagram
 
 ## 5. Diagrama de sequência (script de validação)
 
-```mermaid
-sequenceDiagram
-    actor Cliente as Main (cliente)
-    participant PDF as ExportadorPDF
-    participant Excel as ExportadorExcel
-    participant HTML as ExportadorHTML
-    participant Vendas as relatorioVendas:RelatorioVendas
-    participant RH as relatorioRH:RelatorioRH
-
-    Note over Cliente: Rotina 1 — Relatório de Vendas em PDF
-    Cliente->>PDF: new ExportadorPDF()
-    Cliente->>Vendas: new RelatorioVendas(exportadorPdf)
-    Cliente->>Vendas: gerar()
-    Vendas->>Vendas: gerarConteudo()
-    Vendas->>PDF: exportar(nome, conteudo)
-    PDF-->>Vendas: (arquivo .pdf simulado)
-
-    Note over Cliente: Rotina 2 — MESMO objeto, troca dinâmica para Excel
-    Cliente->>Excel: new ExportadorExcel()
-    Cliente->>Vendas: setExportador(exportadorExcel)
-    Cliente->>Vendas: gerar()
-    Vendas->>Vendas: gerarConteudo()
-    Vendas->>Excel: exportar(nome, conteudo)
-    Excel-->>Vendas: (arquivo .xlsx simulado)
-
-    Note over Cliente: Rotina 3 — Relatório de RH em HTML
-    Cliente->>HTML: new ExportadorHTML()
-    Cliente->>RH: new RelatorioRH(exportadorHtml)
-    Cliente->>RH: gerar()
-    RH->>RH: gerarConteudo()
-    RH->>HTML: exportar(nome, conteudo)
-    HTML-->>RH: (arquivo .html simulado)
-```
+![Diagrama de sequência do padrão Bridge](docs/diagramas/diagrama-sequencia.png)
 
 **Ponto-chave da Rotina 2:** o objeto `relatorioVendas` **não é recriado**.
 Apenas o objeto de implementação injetado nele é trocado em tempo de
@@ -246,10 +158,3 @@ java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp out cliente.Main
 |--------------------------------------------|----------------------------------------------------------|----------------------------------------------|
 | Novo tipo de relatório (ex.: Financeiro)   | 1 nova classe em `abstracao/` estendendo `Relatorio`     | Nenhum exportador é alterado                  |
 | Novo formato (ex.: CSV)                    | 1 nova classe em `implementacao/` implementando `ExportadorRelatorio` | Nenhuma classe de relatório é alterada |
-
-## 9. Vídeo de defesa técnica
-
-> Link do vídeo (repositório público, testado em aba anônima): **`[A PREENCHER]`**
-
-O vídeo demonstra: estrutura de diretórios, injeção de dependência no
-código e execução bem-sucedida das três rotinas do script de validação.
