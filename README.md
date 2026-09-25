@@ -42,7 +42,7 @@ significa que:
 - Adicionar um **novo tipo de relatório** (ex.: Relatório Financeiro) exige
   apenas uma nova subclasse de `Relatorio`, sem tocar nos exportadores.
 - Adicionar um **novo formato** (ex.: CSV) exige apenas uma nova classe que
-  implemente `ExportadorRelatorio`, sem tocar em nenhum relatório existente.
+  implemente `FormatoExportacao`, sem tocar em nenhum relatório existente.
 - Isso é exatamente o **Princípio Aberto/Fechado**: o sistema fica aberto
   para extensão (novas classes) e fechado para modificação (código
   existente permanece intacto).
@@ -61,7 +61,7 @@ PatternBridge/
 │   │   └── RelatorioRH.java            (Refined Abstraction)
 │   │
 │   ├── implementacao/           → Hierarquia da Implementação (Bridge)
-│   │   ├── ExportadorRelatorio.java    (Implementor - interface)
+│   │   ├── FormatoExportacao.java      (Implementor - interface)
 │   │   ├── ExportadorPDF.java          (Concrete Implementor)
 │   │   ├── ExportadorExcel.java        (Concrete Implementor)
 │   │   └── ExportadorHTML.java         (Concrete Implementor)
@@ -86,12 +86,16 @@ alteração em um dos pacotes não exige tocar no outro.
 ![Diagrama de classes do padrão Bridge](docs/diagramas/diagrama-classes.png)
 
 **Leitura do diagrama:**
-- `Relatorio` (Abstraction) e `ExportadorRelatorio` (Implementor) são os dois
-  eixos independentes ligados pela associação `o--` (a "ponte").
+- `Relatorio` (Abstraction) e `FormatoExportacao` (Implementor) são os dois
+  eixos independentes ligados pela associação `exportador` (a "ponte").
 - `RelatorioVendas` e `RelatorioRH` (Refined Abstractions) herdam apenas da
-  Abstração — nunca dos exportadores.
+  Abstração — nunca dos exportadores. Cada uma apura seus próprios dados
+  (`consultarVendas()` / `consultarDesempenho()`) e delega a montagem do
+  arquivo ao exportador.
 - `ExportadorPDF`, `ExportadorExcel` e `ExportadorHTML` (Concrete
-  Implementors) implementam apenas a interface `ExportadorRelatorio`.
+  Implementors) implementam apenas a interface `FormatoExportacao`, cada
+  um com as três etapas de exportação: `desenharCabecalho`, `desenharCorpo`
+  e `finalizarArquivo`.
 - `Main` (cliente) é a única classe que conhece e instancia as
   implementações concretas, injetando-as via construtor nas classes de
   relatório.
@@ -112,14 +116,14 @@ do relatório e o mecanismo de exportação.
 relatório. Essa regra é cumprida da seguinte forma:
 
 - `Relatorio` (e suas subclasses `RelatorioVendas`/`RelatorioRH`) dependem
-  apenas da abstração `ExportadorRelatorio` (interface).
+  apenas da abstração `FormatoExportacao` (interface).
 - A implementação concreta é **sempre** criada fora da hierarquia de
   relatórios — em [`Main.java`](src/cliente/Main.java) — e **injetada via
   construtor**:
 
 ```java
-ExportadorRelatorio exportadorPdf = new ExportadorPDF();
-Relatorio relatorioVendas = new RelatorioVendas(exportadorPdf); // injeção via construtor
+FormatoExportacao exportadorPdf = new ExportadorPDF();
+Relatorio relatorioVendas = new RelatorioVendas("2026-Q1", exportadorPdf); // injeção via construtor
 ```
 
 - A troca em tempo de execução (Rotina 2) usa um *setter* (`setExportador`)
@@ -157,4 +161,4 @@ java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -cp out cliente.Main
 | Cenário                                   | O que muda                                              | O que **não** muda                          |
 |--------------------------------------------|----------------------------------------------------------|----------------------------------------------|
 | Novo tipo de relatório (ex.: Financeiro)   | 1 nova classe em `abstracao/` estendendo `Relatorio`     | Nenhum exportador é alterado                  |
-| Novo formato (ex.: CSV)                    | 1 nova classe em `implementacao/` implementando `ExportadorRelatorio` | Nenhuma classe de relatório é alterada |
+| Novo formato (ex.: CSV)                    | 1 nova classe em `implementacao/` implementando `FormatoExportacao` | Nenhuma classe de relatório é alterada |

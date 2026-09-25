@@ -6,7 +6,7 @@ import abstracao.RelatorioVendas;
 import implementacao.ExportadorExcel;
 import implementacao.ExportadorHTML;
 import implementacao.ExportadorPDF;
-import implementacao.ExportadorRelatorio;
+import implementacao.FormatoExportacao;
 
 /**
  * Classe cliente do padrão Bridge.
@@ -37,27 +37,27 @@ public class Main {
         // Rotina 1: Relatório de Vendas em PDF
         // ------------------------------------------------------------
         System.out.println("--- Rotina 1: Relatorio de Vendas em PDF ---");
-        ExportadorRelatorio exportadorPdf = new ExportadorPDF();          // Implementação concreta escolhida aqui, no cliente
-        Relatorio relatorioVendas = new RelatorioVendas(exportadorPdf);   // Injeção via construtor
-        relatorioVendas.gerar();
+        FormatoExportacao exportadorPdf = new ExportadorPDF();            // Implementação concreta escolhida aqui, no cliente
+        Relatorio relatorioVendas = new RelatorioVendas("2026-Q1", exportadorPdf); // Injeção via construtor
+        relatorioVendas.gerarRelatorio();
         System.out.println();
 
         // ------------------------------------------------------------
         // Rotina 2: Alteração dinâmica do MESMO relatório para Excel
         // ------------------------------------------------------------
         System.out.println("--- Rotina 2: Mesmo Relatorio de Vendas, agora em Excel (troca em runtime) ---");
-        ExportadorRelatorio exportadorExcel = new ExportadorExcel();
+        FormatoExportacao exportadorExcel = new ExportadorExcel();
         relatorioVendas.setExportador(exportadorExcel);  // Troca a implementação sem recriar o objeto Relatorio
-        relatorioVendas.gerar();
+        relatorioVendas.gerarRelatorio();
         System.out.println();
 
         // ------------------------------------------------------------
         // Rotina 3: Relatório de RH em HTML (novo requisito de negócio)
         // ------------------------------------------------------------
         System.out.println("--- Rotina 3: Relatorio de Desempenho de RH em HTML ---");
-        ExportadorRelatorio exportadorHtml = new ExportadorHTML();
-        Relatorio relatorioRH = new RelatorioRH(exportadorHtml);
-        relatorioRH.gerar();
+        FormatoExportacao exportadorHtml = new ExportadorHTML();
+        Relatorio relatorioRH = new RelatorioRH("Recursos Humanos", exportadorHtml);
+        relatorioRH.gerarRelatorio();
         System.out.println();
 
         System.out.println("############################################");

@@ -1,6 +1,8 @@
 package abstracao;
 
-import implementacao.ExportadorRelatorio;
+import implementacao.FormatoExportacao;
+
+import java.util.List;
 
 /**
  * Abstração Refinada (Refined Abstraction) representando o relatório
@@ -11,14 +13,30 @@ import implementacao.ExportadorRelatorio;
  */
 public class RelatorioVendas extends Relatorio {
 
-    public RelatorioVendas(ExportadorRelatorio exportador) {
+    private final String periodo;
+
+    public RelatorioVendas(String periodo, FormatoExportacao exportador) {
         super("Relatorio de Vendas", exportador);
+        this.periodo = periodo;
+    }
+
+    /**
+     * Simula a consulta à base de dados de vendas do período informado.
+     */
+    private List<String> consultarVendas() {
+        return List.of(
+                "Periodo: " + periodo,
+                "Produto A: 150 unidades vendidas | Receita: R$ 15.000,00",
+                "Produto B: 80 unidades vendidas  | Receita: R$ 9.600,00",
+                "Total do periodo: R$ 24.600,00"
+        );
     }
 
     @Override
-    protected String gerarConteudo() {
-        return "Produto A: 150 unidades vendidas | Receita: R$ 15.000,00\n"
-             + "Produto B: 80 unidades vendidas  | Receita: R$ 9.600,00\n"
-             + "Total do período: R$ 24.600,00";
+    public void gerarRelatorio() {
+        List<String> dados = consultarVendas();
+        exportador.desenharCabecalho(titulo);
+        exportador.desenharCorpo(dados);
+        exportador.finalizarArquivo();
     }
 }

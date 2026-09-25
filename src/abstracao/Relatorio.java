@@ -1,11 +1,11 @@
 package abstracao;
 
-import implementacao.ExportadorRelatorio;
+import implementacao.FormatoExportacao;
 
 /**
  * Abstração do padrão Bridge.
  *
- * Mantém uma referência ao objeto de {@link ExportadorRelatorio}
+ * Mantém uma referência ao objeto de {@link FormatoExportacao}
  * (a "ponte" para a Implementação) em vez de herdar dela. Isso desacopla
  * a hierarquia de tipos de relatório (Vendas, RH, ...) da hierarquia de
  * formatos de exportação (PDF, Excel, HTML, ...), permitindo que ambas
@@ -18,15 +18,15 @@ import implementacao.ExportadorRelatorio;
 public abstract class Relatorio {
 
     /** Referência à Implementação (a "ponte"). */
-    protected ExportadorRelatorio exportador;
+    protected FormatoExportacao exportador;
 
-    private final String nome;
+    protected String titulo;
 
-    protected Relatorio(String nome, ExportadorRelatorio exportador) {
+    protected Relatorio(String titulo, FormatoExportacao exportador) {
         if (exportador == null) {
             throw new IllegalArgumentException("O exportador não pode ser nulo.");
         }
-        this.nome = nome;
+        this.titulo = titulo;
         this.exportador = exportador;
     }
 
@@ -37,36 +37,21 @@ public abstract class Relatorio {
      * relatório de vendas pode ser gerado em PDF e, em seguida, no mesmo
      * objeto, ser exportado para Excel.
      *
-     * @param novoExportador nova implementação a ser injetada (via setter,
-     *                        complementando a injeção via construtor)
+     * @param exportador nova implementação a ser injetada (via setter,
+     *                    complementando a injeção via construtor)
      */
-    public void setExportador(ExportadorRelatorio novoExportador) {
-        if (novoExportador == null) {
+    public void setExportador(FormatoExportacao exportador) {
+        if (exportador == null) {
             throw new IllegalArgumentException("O exportador não pode ser nulo.");
         }
-        this.exportador = novoExportador;
-    }
-
-    public String getNome() {
-        return nome;
+        this.exportador = exportador;
     }
 
     /**
-     * Monta o conteúdo específico deste tipo de relatório. Cada subclasse
-     * concreta de Relatorio implementa sua própria lógica de negócio,
-     * totalmente independente do formato de saída.
+     * Operação de alto nível exposta ao cliente. Cada subclasse concreta
+     * de Relatorio implementa sua própria lógica de negócio (apuração dos
+     * dados) e delega a exportação propriamente dita ao objeto Implementor
+     * atual (a "ponte"), qualquer que ele seja.
      */
-    protected abstract String gerarConteudo();
-
-    /**
-     * Operação de alto nível exposta ao cliente. Delega a exportação
-     * propriamente dita ao objeto Implementor atual (a "ponte"),
-     * qualquer que ele seja.
-     */
-    public void gerar() {
-        String conteudo = gerarConteudo();
-        System.out.println(">> Solicitando geração de \"" + nome + "\" no formato "
-                + exportador.getFormato() + "...");
-        exportador.exportar(nome, conteudo);
-    }
+    public abstract void gerarRelatorio();
 }
